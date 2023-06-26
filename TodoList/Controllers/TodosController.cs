@@ -40,10 +40,24 @@ namespace TodoApp.Controllers
             return todo;
         }
 
+        // GET: api/Todos/5/SubTodos
+        [HttpGet("{id}/SubTodos")]
+        public async Task<ActionResult<IEnumerable<Todo>>> GetSubTodos(int id)
+        {
+            var todo = await _context.Todos.FindAsync(id);
+
+            if (todo == null)
+            {
+                return NotFound();
+            }
+
+            return todo.SubTodos ?? new List<Todo>();
+        }
+
         // PUT: api/Todos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult<Todo>> PutTodo(int id, Todo todo)
+        public async Task<IActionResult> PutTodo(int id, Todo todo)
         {
             if (id != todo.Id)
             {
@@ -68,7 +82,7 @@ namespace TodoApp.Controllers
                 }
             }
 
-            return todo;
+            return NoContent();
         }
 
         // POST: api/Todos
@@ -80,6 +94,29 @@ namespace TodoApp.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTodo", new { id = todo.Id }, todo);
+        }
+
+        // POST: api/Todos/5/SubTodos
+        [HttpPost("{id}/SubTodos")]
+        public async Task<ActionResult<Todo>> AddSubTodo(int id, Todo subTodo)
+        {
+            var todo = await _context.Todos.FindAsync(id);
+
+            if (todo == null)
+            {
+                return NotFound();
+            }
+
+            if (todo.SubTodos == null)
+            {
+                todo.SubTodos = new List<Todo>();
+            }
+
+            todo.SubTodos.Add(subTodo);
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetTodo", new { id = subTodo.Id }, subTodo);
         }
 
         // DELETE: api/Todos/5
